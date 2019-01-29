@@ -1,0 +1,1 @@
+enucli -u http://enu.qsx.io --wallet-url=http://127.0.0.1:8901 set account permission claim.test.v active '{"threshold": 1,"keys": [{"key": "ENU8V23Jnw9YfEjpQoQfEpFvRX1XX3PgRfWkVTXLenWSmKf74KLFJ","weight": 1}],"accounts": [{"permission":{"actor":"claim.test.v","permission":"enumivo.code"},"weight":1}]}' owner -p claim.test.v

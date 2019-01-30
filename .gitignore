@@ -1,3 +1,4 @@
 build/claimforvote.wast
 build/claimforvote.abi
 build/claimforvote.wasm
+.vscode/settings.json

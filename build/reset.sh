@@ -1,0 +1,1 @@
+enucli -u  http://enu.qsx.io  --wallet-url=http://127.0.0.1:8901 push action claim.test.v reset '[]' -p claim.test.v

@@ -7,7 +7,7 @@
 using namespace enumivo;
 using namespace std;
 
-const uint64_t useconds_per_day = 24 * 3600 * uint64_t(1000000);
+const uint32_t sec_per_day = 24 * 3600;
 
 class claimforvote : public contract
 {
@@ -20,35 +20,29 @@ public:
   // @abi action
   void claim(const account_name &user);
 
+  // @abi action
+  void reset();
+
+  void transfer(const account_name from, const account_name to, const asset quantity, const string memo);
+
 private:
+  void innerClaim(const account_name &user);
+
+  /* voter_info copy from system contract */
   struct voter_info
   {
-    account_name owner = 0;              /// the voter
-    account_name proxy = 0;              /// the proxy set by the voter, if any
-    std::vector<account_name> producers; /// the producers approved by this voter if no proxy set
+    account_name owner = 0;
+    account_name proxy = 0;
+    std::vector<account_name> producers;
     int64_t staked = 0;
-
-    /**
-       *  Every time a vote is cast we must first "undo" the last vote weight, before casting the
-       *  new vote weight.  Vote weight is calculated as:
-       *
-       *  stated.amount * 2 ^ ( weeks_since_launch/weeks_per_year)
-       */
-    double last_vote_weight = 0; /// the vote weight cast the last time the vote was updated
-
-    /**
-       * Total vote weight delegated to this voter.
-       */
-    double proxied_vote_weight = 0; /// the total vote weight delegated to this voter as a proxy
-    bool is_proxy = 0;              /// whether the voter is a proxy for others
-
+    double last_vote_weight = 0;
+    double proxied_vote_weight = 0;
+    bool is_proxy = 0;
     uint32_t reserved1 = 0;
     time reserved2 = 0;
     enumivo::asset reserved3;
-
     uint64_t primary_key() const { return owner; }
 
-    // explicit serialization macro is not necessary, used here only to improve compilation time
     ENULIB_SERIALIZE(voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(reserved1)(reserved2)(reserved3))
   };
 
@@ -68,4 +62,25 @@ private:
   claimer_index _claimer;
 };
 
-ENUMIVO_ABI(claimforvote, (claim))
+#define ENUMIVO_ABI_EX(TYPE, MEMBERS)                                                                              \
+  extern "C"                                                                                                       \
+  {                                                                                                                \
+    void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                  \
+    {                                                                                                              \
+      if (action == N(onerror))                                                                                    \
+      {                                                                                                            \
+        enumivo_assert(code == N(enumivo), "onerror action's are only valid from the \"enumivo\" system account"); \
+      }                                                                                                            \
+      auto self = receiver;                                                                                        \
+      if ((code == self && action != N(transfer)) || (code == N(enu.token) && action == N(transfer)))              \
+      {                                                                                                            \
+        TYPE thiscontract(self);                                                                                   \
+        switch (action)                                                                                            \
+        {                                                                                                          \
+          ENUMIVO_API(TYPE, MEMBERS)                                                                               \
+        }                                                                                                          \
+      }                                                                                                            \
+    }                                                                                                              \
+  }
+
+ENUMIVO_ABI_EX(claimforvote, (transfer)(claim)(reset))

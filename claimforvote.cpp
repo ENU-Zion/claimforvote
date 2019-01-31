@@ -45,6 +45,7 @@ void claimforvote::innerClaim(const account_name &user)
   if (claimer_itr != _claimer.end())
   {
     enumivo_assert(ct - claimer_itr->last_claim_time > sec_per_day, "already claimed rewards within past day");
+    enumivo_assert(ct - claimer_itr->last_violation_time > (3 * sec_per_day), "you should wait 3 days after violation check");
     _claimer.modify(claimer_itr, 0, [&](auto &c) {
       c.last_claim_time = ct;
     });
@@ -54,7 +55,26 @@ void claimforvote::innerClaim(const account_name &user)
     claimer_itr = _claimer.emplace(_self, [&](auto &c) {
       c.claimer = user;
       c.last_claim_time = ct;
+      c.last_violation_time = 0;
     });
+  }
+
+  /* check other user*/
+  auto i = 0;
+  while (i++ < 5)
+  {
+    ++claimer_itr;
+    if (claimer_itr == _claimer.end())
+    {
+      claimer_itr = _claimer.begin();
+    }
+    const auto &examinee = _voters.get(claimer_itr->claimer, "unable to find your vote info");
+    if (examinee.producers.size() != 1)
+    {
+      _claimer.modify(claimer_itr, 0, [&](auto &c) {
+        c.last_violation_time = ct;
+      });
+    }
   }
 
   /* assume token precision is 4 */

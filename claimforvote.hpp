@@ -54,8 +54,9 @@ private:
   {
     account_name claimer;
     uint64_t last_claim_time = 0;
+    uint64_t last_violation_time = 0;
     uint64_t primary_key() const { return claimer; }
-    ENULIB_SERIALIZE(claimer_info, (claimer)(last_claim_time))
+    ENULIB_SERIALIZE(claimer_info, (claimer)(last_claim_time)(last_violation_time))
   };
 
   typedef enumivo::multi_index<N(claimer), claimer_info> claimer_index;

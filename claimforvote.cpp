@@ -11,6 +11,7 @@ void claimforvote::reset()
     _claimer.erase(itr);
     itr = _claimer.begin();
   }
+  _global.remove();
 }
 
 void claimforvote::claim(const account_name &user)
@@ -59,24 +60,6 @@ void claimforvote::innerClaim(const account_name &user)
     });
   }
 
-  /* check other user*/
-  auto i = 0;
-  while (i++ < 5)
-  {
-    ++claimer_itr;
-    if (claimer_itr == _claimer.end())
-    {
-      claimer_itr = _claimer.begin();
-    }
-    const auto &examinee = _voters.get(claimer_itr->claimer, "unable to find your vote info");
-    if (examinee.producers.size() != 1)
-    {
-      _claimer.modify(claimer_itr, 0, [&](auto &c) {
-        c.last_violation_time = ct;
-      });
-    }
-  }
-
   /* assume token precision is 4 */
   auto rewards = asset(voter.last_vote_weight / 500000 / 100, TOKEN_SYMBOL);
 
@@ -89,4 +72,42 @@ void claimforvote::innerClaim(const account_name &user)
   /* action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(transfer),
          std::make_tuple(_self, user, rewards, std::string("Reward for vote")))
       .send(); */
+
+  /* send defer check action, cancel within 24 hours */
+  enumivo::transaction txn{};
+  txn.actions.emplace_back(
+      enumivo::permission_level(_self, N(active)),
+      _self,
+      N(check),
+      std::make_tuple(user));
+  txn.delay_sec = _random(user, 60 * 60 * 24);
+  txn.send(_next_id(), _self, false);
+}
+
+void claimforvote::check(const account_name &user)
+{
+  /* require_auth(_self); */
+
+  /* check user and next 10  */
+  auto ct = now();
+  auto claimer_itr = _claimer.find(user);
+  if (claimer_itr != _claimer.end())
+  {
+    auto i = 0;
+    while (i++ < 11)
+    {
+      auto &examinee = _voters.get(claimer_itr->claimer, "unable to find your vote info");
+      if (examinee.producers.size() != 1)
+      {
+        _claimer.modify(claimer_itr, 0, [&](auto &c) {
+          c.last_violation_time = ct;
+        });
+      }
+      ++claimer_itr;
+      if (claimer_itr == _claimer.end())
+      {
+        claimer_itr = _claimer.begin();
+      }
+    }
+  }
 }

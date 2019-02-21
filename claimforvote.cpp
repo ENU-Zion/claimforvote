@@ -64,14 +64,14 @@ void claimforvote::innerClaim(const account_name &user)
   auto rewards = asset(voter.last_vote_weight / 500000 / 100, TOKEN_SYMBOL);
 
   /* issue */
-  action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(issue),
+  /* action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(issue),
          std::make_tuple(user, rewards, std::string("Reward for vote")))
-      .send();
+      .send(); */
 
   /* transfer */
-  /* action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(transfer),
+  action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(transfer),
          std::make_tuple(_self, user, rewards, std::string("Reward for vote")))
-      .send(); */
+      .send();
 
   /* send defer check action, cancel within 24 hours */
   enumivo::transaction txn{};

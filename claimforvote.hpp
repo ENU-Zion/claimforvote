@@ -4,8 +4,8 @@
 #include <enulib/transaction.hpp>
 #include <enulib/crypto.h>
 
-#define TOKEN_CONTRACT N(t.red.test.v)
-#define TOKEN_SYMBOL S(4, VOTE)
+#define TOKEN_CONTRACT N(ltsonenumivo)
+#define TOKEN_SYMBOL S(4, LTS)
 
 using namespace enumivo;
 using namespace std;

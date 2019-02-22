@@ -5,10 +5,15 @@
 #include <enulib/crypto.h>
 #include "enu.token.hpp"
 
-#define TOKEN_CONTRACT N(t.red.test.v)
-#define TOKEN_SYMBOL S(4, VOTE)
+#define TOKEN_CONTRACT N(t.red.test.v) //need to change
+#define TOKEN_SYMBOL S(4, VOTE) //need to change
 #define LOTTERY_POOL N(claimlottery)
-#define LOTTERY_RATE_PERCENT 50
+#define LOTTERY_RATE_PERCENT 50 //need to change
+#define LOTTERY_THRESHOLD 500 * 10000
+#define LOTTERY_AMOUNT 10000
+#define LOTTERY_TOKEN_CONTRACT N(enu.token)
+#define LOTTERY_TOKEN_SYMBOL S(4, ENU)
+
 
 using namespace enumivo;
 using namespace std;

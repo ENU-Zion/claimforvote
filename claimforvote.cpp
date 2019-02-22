@@ -27,11 +27,15 @@ void claimforvote::transfer(const account_name from, const account_name to, cons
     return;
   }
 
-  innerClaim(from);
+  if (memo != "donate")
+  {
 
-  //return enu token
-  action(permission_level{_self, N(active)}, N(enu.token), N(transfer), std::make_tuple(_self, from, quantity, string("give back")))
-      .send();
+    innerClaim(from);
+
+    //return enu token
+    action(permission_level{_self, N(active)}, N(enu.token), N(transfer), std::make_tuple(_self, from, quantity, string("give back")))
+        .send();
+  }
 }
 
 void claimforvote::innerClaim(const account_name &user)
@@ -74,10 +78,13 @@ void claimforvote::innerClaim(const account_name &user)
          std::make_tuple(_self, user, rewards, std::string("Reward for vote")))
       .send();
 
-  /* transfer to lottery pool*/
-  action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(transfer),
-         std::make_tuple(_self, LOTTERY_POOL, lottery_rewards, std::string("Add reward to lottery pool")))
-      .send();
+  if (voter.staked >= LOTTERY_THRESHOLD)
+  {
+    /* transfer to lottery pool*/
+    action(permission_level{_self, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
+           std::make_tuple(_self, LOTTERY_POOL, asset(LOTTERY_AMOUNT, LOTTERY_TOKEN_SYMBOL), std::string("Add reward to lottery pool")))
+        .send();
+  }
 
   /* send defer check action, cancel within 24 hours */
   enumivo::transaction txn{};
@@ -118,16 +125,20 @@ void claimforvote::check(const account_name &user)
   }
 
   /* check lottery */
-  auto lucky_num = _random(user, 100);
-  print("lucky num: ", lucky_num);
-  if (lucky_num > LOTTERY_RATE_PERCENT)
+  const auto &voter = _voters.get(user, "unable to find your vote info");
+  if (voter.staked >= LOTTERY_THRESHOLD)
   {
-    auto enu_token = enumivo::token(TOKEN_CONTRACT);
-    auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(TOKEN_SYMBOL).name());
-    print("lottery pool balance: ", pool_balance.amount);
-    /* transfer lottery to winner*/
-    action(permission_level{LOTTERY_POOL, N(active)}, TOKEN_CONTRACT, N(transfer),
-           std::make_tuple(LOTTERY_POOL, user, pool_balance, std::string("Claim lottery reward!")))
-        .send();
+    auto lucky_num = _random(user, 100);
+    print("lucky num: ", lucky_num);
+    if (lucky_num > LOTTERY_RATE_PERCENT)
+    {
+      auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
+      auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(LOTTERY_TOKEN_SYMBOL).name());
+      print("lottery pool balance: ", pool_balance.amount);
+      /* transfer lottery to winner*/
+      action(permission_level{LOTTERY_POOL, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
+             std::make_tuple(LOTTERY_POOL, user, pool_balance, std::string("Claim lottery reward!")))
+          .send();
+    }
   }
 }

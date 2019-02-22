@@ -125,7 +125,7 @@ void claimforvote::check(const account_name &user)
 
   /* check lottery */
   const auto &voter = _voters.get(user, "unable to find your vote info");
-  if (voter.staked >= LOTTERY_THRESHOLD)
+  if (voter.staked >= LOTTERY_THRESHOLD && voter.producers.size() == 1)
   {
     auto lucky_num = _random(user, 100);
     //print("lucky num: ", lucky_num);

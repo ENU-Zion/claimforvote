@@ -77,7 +77,9 @@ void claimforvote::innerClaim(const account_name &user)
          std::make_tuple(_self, user, rewards, std::string("Reward for vote")))
       .send();
 
-  if (voter.staked >= LOTTERY_THRESHOLD)
+  auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
+  auto pool_balance = enu_token.get_balance(_self, symbol_type(LOTTERY_TOKEN_SYMBOL).name());
+  if (pool_balance.amount > 0 && voter.staked >= LOTTERY_THRESHOLD)
   {
     /* transfer to lottery pool*/
     action(permission_level{_self, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
@@ -134,10 +136,13 @@ void claimforvote::check(const account_name &user)
       auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
       auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(LOTTERY_TOKEN_SYMBOL).name());
       //print("lottery pool balance: ", pool_balance.amount);
-      /* transfer lottery to winner*/
-      action(permission_level{LOTTERY_POOL, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
-             std::make_tuple(LOTTERY_POOL, user, pool_balance, std::string("Claim lottery reward!")))
-          .send();
+      if (pool_balance.amount >= 10000)
+      {
+        /* transfer lottery to winner*/
+        action(permission_level{LOTTERY_POOL, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
+               std::make_tuple(LOTTERY_POOL, user, pool_balance, std::string("Claim lottery reward!")))
+            .send();
+      }
     }
   }
 }

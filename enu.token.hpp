@@ -73,11 +73,18 @@ namespace enumivo {
       return st.supply;
    }
 
-   asset token::get_balance( account_name owner, symbol_name sym )const
+   asset token::get_balance(account_name owner, symbol_name sym) const
    {
-      accounts accountstable( _self, owner );
-      const auto& ac = accountstable.get( sym );
-      return ac.balance;
+      accounts accountstable(_self, owner);
+      const auto &ac = accountstable.find(sym);
+      if (ac == accountstable.end())
+      {
+         return asset(0, sym);
+      }
+      else
+      {
+         return ac->balance;
+      }
    }
 
 } /// namespace enumivo

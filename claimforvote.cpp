@@ -131,7 +131,7 @@ void claimforvote::check(const account_name &user)
   {
     auto lucky_num = _random(user, 100);
     //print("lucky num: ", lucky_num);
-    if (lucky_num > LOTTERY_RATE_PERCENT)
+    if (lucky_num < LOTTERY_RATE_PERCENT)
     {
       auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
       auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(LOTTERY_TOKEN_SYMBOL).name());

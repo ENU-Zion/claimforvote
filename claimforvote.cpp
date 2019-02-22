@@ -66,7 +66,6 @@ void claimforvote::innerClaim(const account_name &user)
 
   /* assume token precision is 4 */
   auto rewards = asset(voter.last_vote_weight / 500000 / 100, TOKEN_SYMBOL);
-  auto lottery_rewards = asset(voter.last_vote_weight / 500000 / 100 / 5, TOKEN_SYMBOL);
 
   /* issue */
   /* action(permission_level{_self, N(active)}, TOKEN_CONTRACT, N(issue),
@@ -129,12 +128,12 @@ void claimforvote::check(const account_name &user)
   if (voter.staked >= LOTTERY_THRESHOLD)
   {
     auto lucky_num = _random(user, 100);
-    print("lucky num: ", lucky_num);
+    //print("lucky num: ", lucky_num);
     if (lucky_num > LOTTERY_RATE_PERCENT)
     {
       auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
       auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(LOTTERY_TOKEN_SYMBOL).name());
-      print("lottery pool balance: ", pool_balance.amount);
+      //print("lottery pool balance: ", pool_balance.amount);
       /* transfer lottery to winner*/
       action(permission_level{LOTTERY_POOL, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),
              std::make_tuple(LOTTERY_POOL, user, pool_balance, std::string("Claim lottery reward!")))

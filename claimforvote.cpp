@@ -136,7 +136,7 @@ void claimforvote::check(const account_name &user)
       auto enu_token = enumivo::token(LOTTERY_TOKEN_CONTRACT);
       auto pool_balance = enu_token.get_balance(LOTTERY_POOL, symbol_type(LOTTERY_TOKEN_SYMBOL).name());
       //print("lottery pool balance: ", pool_balance.amount);
-      if (pool_balance.amount >= 10000)
+      if (pool_balance.amount >= 100000)
       {
         /* transfer lottery to winner*/
         action(permission_level{LOTTERY_POOL, N(active)}, LOTTERY_TOKEN_CONTRACT, N(transfer),

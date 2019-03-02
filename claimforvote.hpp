@@ -3,9 +3,16 @@
 #include <enulib/singleton.hpp>
 #include <enulib/transaction.hpp>
 #include <enulib/crypto.h>
+#include "enu.token.hpp"
 
 #define TOKEN_CONTRACT N(ltsonenumivo)
 #define TOKEN_SYMBOL S(4, LTS)
+#define LOTTERY_POOL N(claimlottery)
+#define LOTTERY_RATE_PERCENT 10
+#define LOTTERY_THRESHOLD 500 * 10000
+#define LOTTERY_AMOUNT 10000
+#define LOTTERY_TOKEN_CONTRACT N(enu.token)
+#define LOTTERY_TOKEN_SYMBOL S(4, ENU)
 
 using namespace enumivo;
 using namespace std;
